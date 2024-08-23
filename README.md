@@ -1,10 +1,10 @@
 ### [Strato's](https://github.com/strato-emu/strato) Compatibility List
 
-![Playable](https://img.shields.io/badge/Playable-2-brightgreen)
-![Ingame](https://img.shields.io/badge/Ingame-0-yellow)
-![Menus](https://img.shields.io/badge/Menus-0-orange)
-![Boots](https://img.shields.io/badge/Boots-0-red)
-![Nothing](https://img.shields.io/badge/Nothing-0-blue)
+![Playable](https://img.shields.io/badge/Playable-2 (100%)-brightgreen)
+![Ingame](https://img.shields.io/badge/Ingame-0 (0%)-yellow)
+![Menus](https://img.shields.io/badge/Menus-0 (0%)-orange)
+![Boots](https://img.shields.io/badge/Boots-0 (0%)-red)
+![Nothing](https://img.shields.io/badge/Nothing-0 (0%)-blue)
 
 A repository with [**GitHub Issues**](https://github.com/strato-emu/compat-list/issues) of Nintendo Switch titles and their corresponding compatibility status with <a href="https://github.com/strato-emu/strato"><b>Strato</b></a>, reporting regressions and progression in a title's status (`nothing`, `boots`, `ingame` or `playable`) alongside tagging them with metadata for efficient retesting and tracking what the most pertinent issues may be for focusing development efforts.
 
