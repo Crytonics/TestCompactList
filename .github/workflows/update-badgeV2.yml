@@ -56,11 +56,11 @@ jobs:
         BOOTS_PERCENT=${{ steps.count_issues.outputs.boots_percent }}
         NOTHING_PERCENT=${{ steps.count_issues.outputs.nothing_percent }}
         MENUS_PERCENT=${{ steps.count_issues.outputs.menus_percent }}
-        sed -i "s/Playable-[0-9]*/Playable-${PLAYABLE_COUNT}_(${PLAYABLE_PERCENT}%)/" README.md
-        sed -i "s/Ingame-[0-9]*/Ingame-${INGAME_COUNT}_(${INGAME_PERCENT}%)/" README.md
-        sed -i "s/Boots-[0-9]*/Boots-${BOOTS_COUNT}_(${BOOTS_PERCENT}%)/" README.md
-        sed -i "s/Nothing-[0-9]*/Nothing-${NOTHING_COUNT}_(${NOTHING_PERCENT}%)/" README.md
-        sed -i "s/Menus-[0-9]*/Menus-${MENUS_COUNT}_(${MENUS_PERCENT}%)/" README.md
+        sed -i "s/Playable-[0-9]*/Playable-${PLAYABLE_COUNT}_(${PLAYABLE_PERCENT}%25)/" README.md
+        sed -i "s/Ingame-[0-9]*/Ingame-${INGAME_COUNT}_(${INGAME_PERCENT}%25)/" README.md
+        sed -i "s/Boots-[0-9]*/Boots-${BOOTS_COUNT}_(${BOOTS_PERCENT}%25)/" README.md
+        sed -i "s/Nothing-[0-9]*/Nothing-${NOTHING_COUNT}_(${NOTHING_PERCENT}%25)/" README.md
+        sed -i "s/Menus-[0-9]*/Menus-${MENUS_COUNT}_(${MENUS_PERCENT}%25)/" README.md
 
     - name: Commit changes
       run: |
