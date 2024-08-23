@@ -62,7 +62,15 @@ jobs:
         sed -i "s/Nothing-[0-9]*_(.*%25)/Nothing-${NOTHING_COUNT}_(${NOTHING_PERCENT}%25)/" README.md
         sed -i "s/Menus-[0-9]*_(.*%25)/Menus-${MENUS_COUNT}_(${MENUS_PERCENT}%25)/" README.md
 
+    - name: Check for changes
+      run: |
+        if git diff --exit-code > /dev/null; then
+          echo "No changes to commit";
+          exit 0;
+        fi
+
     - name: Commit changes
+      if: success() && steps.check_for_changes.outputs.changed == 'true'
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
