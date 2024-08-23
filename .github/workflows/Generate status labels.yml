@@ -1,4 +1,4 @@
-name: Update Badge Counts
+name: Generate status labels
 
 on:
   schedule:
@@ -23,6 +23,7 @@ jobs:
           COUNT=$(gh issue list --label "$label" --json number --jq 'length' || echo 0)
           TOTAL_COUNT=$(($TOTAL_COUNT + $COUNT))
         done
+
         PLAYABLE_COUNT_one=$(gh issue list --label status-playable++ --json number --jq 'length' || echo 0)
         PLAYABLE_COUNT_two=$(gh issue list --label status-playable-- --json number --jq 'length' || echo 0)
         INGAME_COUNT_one=$(gh issue list --label status-ingame++ --json number --jq 'length' || echo 0)
@@ -30,6 +31,7 @@ jobs:
         BOOTS_COUNT=$(gh issue list --label status-boots --json number --jq 'length' || echo 0)
         NOTHING_COUNT=$(gh issue list --label status-nothing --json number --jq 'length' || echo 0)
         MENUS_COUNT=$(gh issue list --label status-menus --json number --jq 'length' || echo 0)
+        
         PLAYABLE_COUNT=$(($PLAYABLE_COUNT_one + $PLAYABLE_COUNT_two))
         INGAME_COUNT=$(($INGAME_COUNT_one + $INGAME_COUNT_two))
         PLAYABLE_PERCENT=$(($PLAYABLE_COUNT * 100 / $TOTAL_COUNT))
@@ -37,6 +39,7 @@ jobs:
         BOOTS_PERCENT=$(($BOOTS_COUNT * 100 / $TOTAL_COUNT))
         NOTHING_PERCENT=$(($NOTHING_COUNT * 100 / $TOTAL_COUNT))
         MENUS_PERCENT=$(($MENUS_COUNT * 100 / $TOTAL_COUNT))
+        
         echo "::set-output name=playable_count::$PLAYABLE_COUNT"
         echo "::set-output name=ingame_count::$INGAME_COUNT"
         echo "::set-output name=boots_count::$BOOTS_COUNT"
@@ -60,6 +63,7 @@ jobs:
         BOOTS_PERCENT=${{ steps.count_issues.outputs.boots_percent }}
         NOTHING_PERCENT=${{ steps.count_issues.outputs.nothing_percent }}
         MENUS_PERCENT=${{ steps.count_issues.outputs.menus_percent }}
+        
         sed -i "s/Playable-[0-9]*_(.*%25)/Playable-${PLAYABLE_COUNT}_(${PLAYABLE_PERCENT}%25)/" README.md
         sed -i "s/Ingame-[0-9]*_(.*%25)/Ingame-${INGAME_COUNT}_(${INGAME_PERCENT}%25)/" README.md
         sed -i "s/Boots-[0-9]*_(.*%25)/Boots-${BOOTS_COUNT}_(${BOOTS_PERCENT}%25)/" README.md
@@ -81,5 +85,5 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add README.md
-        git commit -m "Update badge counts"
+        git commit -m "Generate status labels $(date +'%Y-%m-%d')"
         git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git
