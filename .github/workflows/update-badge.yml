@@ -1,33 +1,24 @@
-name: Update Playable Badge
+name: Update Playable Count
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs every day at midnight
-  workflow_dispatch:
+    - cron: '0 * * * *' # Runs every hour
+  push:
+    branches:
+      - main
 
 jobs:
-  update-badge:
+  update-playable-count:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up GitHub CLI
-      uses: actions/setup-gh-cli@v1
-
-    - name: Authenticate GitHub CLI
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-
-    - name: Count Playable Issues
+    - name: Count issues with 'status-playable' label
       id: count_playable
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        PLAYABLE_COUNT=$(gh issue list --label status-playable --json number --jq 'length')
+        PLAYABLE_COUNT=$(gh issue list --label status-playable --json number | jq length)
         echo "::set-output name=playable_count::$PLAYABLE_COUNT"
 
     - name: Update README.md
@@ -40,5 +31,5 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add README.md
-        git commit -m "Update playable badge count"
+        git commit -m "Update playable count to ${{ steps.count_playable.outputs.playable_count }}"
         git push
