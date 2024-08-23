@@ -63,10 +63,12 @@ jobs:
         sed -i "s/Menus-[0-9]*_(.*%25)/Menus-${MENUS_COUNT}_(${MENUS_PERCENT}%25)/" README.md
 
     - name: Check for changes
+      id: check_for_changes
       run: |
         if git diff --exit-code > /dev/null; then
-          echo "No changes to commit";
-          exit 0;
+          echo "::set-output name=changed::false"
+        else
+          echo "::set-output name=changed::true"
         fi
 
     - name: Commit changes
