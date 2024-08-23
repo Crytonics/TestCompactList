@@ -1,0 +1,71 @@
+name: Update Badge Counts
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs every day at midnight
+  workflow_dispatch:
+
+jobs:
+  update-badge:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Count Issues
+      id: count_issues
+      run: |
+        TOTAL_COUNT=$(gh issue list --json number --jq 'length' || echo 0)
+        PLAYABLE_COUNT_one=$(gh issue list --label status-playable++ --json number --jq 'length' || echo 0)
+        PLAYABLE_COUNT_two=$(gh issue list --label status-playable-- --json number --jq 'length' || echo 0)
+        INGAME_COUNT_one=$(gh issue list --label status-ingame++ --json number --jq 'length' || echo 0)
+        INGAME_COUNT_two=$(gh issue list --label status-ingame-- --json number --jq 'length' || echo 0)
+        BOOTS_COUNT=$(gh issue list --label status-boots --json number --jq 'length' || echo 0)
+        NOTHING_COUNT=$(gh issue list --label status-nothing --json number --jq 'length' || echo 0)
+        MENUS_COUNT=$(gh issue list --label status-menus --json number --jq 'length' || echo 0)
+        PLAYABLE_COUNT=$(($PLAYABLE_COUNT_one + $PLAYABLE_COUNT_two))
+        INGAME_COUNT=$(($INGAME_COUNT_one + $INGAME_COUNT_two))
+        PLAYABLE_PERCENT=$(($PLAYABLE_COUNT * 100 / $TOTAL_COUNT))
+        INGAME_PERCENT=$(($INGAME_COUNT * 100 / $TOTAL_COUNT))
+        BOOTS_PERCENT=$(($BOOTS_COUNT * 100 / $TOTAL_COUNT))
+        NOTHING_PERCENT=$(($NOTHING_COUNT * 100 / $TOTAL_COUNT))
+        MENUS_PERCENT=$(($MENUS_COUNT * 100 / $TOTAL_COUNT))
+        echo "::set-output name=playable_count::$PLAYABLE_COUNT"
+        echo "::set-output name=ingame_count::$INGAME_COUNT"
+        echo "::set-output name=boots_count::$BOOTS_COUNT"
+        echo "::set-output name=nothing_count::$NOTHING_COUNT"
+        echo "::set-output name=menus_count::$MENUS_COUNT"
+        echo "::set-output name=playable_percent::$PLAYABLE_PERCENT"
+        echo "::set-output name=ingame_percent::$INGAME_PERCENT"
+        echo "::set-output name=boots_percent::$BOOTS_PERCENT"
+        echo "::set-output name=nothing_percent::$NOTHING_PERCENT"
+        echo "::set-output name=menus_percent::$MENUS_PERCENT"
+
+    - name: Update README.md
+      run: |
+        PLAYABLE_COUNT=${{ steps.count_issues.outputs.playable_count }}
+        INGAME_COUNT=${{ steps.count_issues.outputs.ingame_count }}
+        BOOTS_COUNT=${{ steps.count_issues.outputs.boots_count }}
+        NOTHING_COUNT=${{ steps.count_issues.outputs.nothing_count }}
+        MENUS_COUNT=${{ steps.count_issues.outputs.menus_count }}
+        PLAYABLE_PERCENT=${{ steps.count_issues.outputs.playable_percent }}
+        INGAME_PERCENT=${{ steps.count_issues.outputs.ingame_percent }}
+        BOOTS_PERCENT=${{ steps.count_issues.outputs.boots_percent }}
+        NOTHING_PERCENT=${{ steps.count_issues.outputs.nothing_percent }}
+        MENUS_PERCENT=${{ steps.count_issues.outputs.menus_percent }}
+        sed -i "s/Playable-[0-9]*/Playable-${PLAYABLE_COUNT} (${PLAYABLE_PERCENT}%)/" README.md
+        sed -i "s/Ingame-[0-9]*/Ingame-${INGAME_COUNT} (${INGAME_PERCENT}%)/" README.md
+        sed -i "s/Boots-[0-9]*/Boots-${BOOTS_COUNT} (${BOOTS_PERCENT}%)/" README.md
+        sed -i "s/Nothing-[0-9]*/Nothing-${NOTHING_COUNT} (${NOTHING_PERCENT}%)/" README.md
+        sed -i "s/Menus-[0-9]*/Menus-${MENUS_COUNT} (${MENUS_PERCENT}%)/" README.md
+
+    - name: Commit changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add README.md
+        git commit -m "Update badge counts"
+        git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git
