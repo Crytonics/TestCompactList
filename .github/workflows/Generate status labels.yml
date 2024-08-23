@@ -70,14 +70,16 @@ jobs:
         sed -i "s/Nothing-[0-9]*_(.*%25)/Nothing-${NOTHING_COUNT}_(${NOTHING_PERCENT}%25)/" README.md
         sed -i "s/Menus-[0-9]*_(.*%25)/Menus-${MENUS_COUNT}_(${MENUS_PERCENT}%25)/" README.md
 
-    - name: Check for changes
-      id: check_for_changes
-      run: |
-        if git diff --exit-code > /dev/null; then
-          echo "::set-output name=changed::false"
-        else
-          echo "::set-output name=changed::true"
-        fi
+        - name: Check for changes
+        id: check_for_changes
+        run: |
+          if git diff --exit-code > /dev/null; then
+            echo "No changes detected"
+            echo "::set-output name=changed::false"
+          else
+            echo "Changes detected"
+            echo "::set-output name=changed::true"
+          fi
 
     - name: Commit changes
       if: success() && steps.check_for_changes.outputs.changed == 'true'
