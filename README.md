@@ -2,6 +2,7 @@
 
 ![Playable](https://img.shields.io/badge/Playable-0-brightgreen)
 ![Ingame](https://img.shields.io/badge/Ingame-0-yellow)
+![Menus](https://img.shields.io/badge/Menus-0-orange)
 ![Boots](https://img.shields.io/badge/Boots-0-red)
 ![Nothing](https://img.shields.io/badge/Nothing-0-blue)
 
