@@ -1,5 +1,9 @@
 name: Generate status labels
 
+permissions:
+  contents: write
+  issues: read
+
 on:
   schedule:
     - cron: '0 0 * * *' # Runs every day at midnight
