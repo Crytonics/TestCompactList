@@ -18,7 +18,11 @@ jobs:
     - name: Count Issues
       id: count_issues
       run: |
-        TOTAL_COUNT=$(gh issue list --label status-playable++ --label status-playable-- --label status-ingame++ --label status-ingame-- --label status-boots --label status-nothing --label status-menus --json number --jq 'length' || echo 0)
+        TOTAL_COUNT=0
+        for label in "status-playable++" "status-playable--" "status-ingame++" "status-ingame--" "status-boots" "status-nothing" "status-menus"; do
+          COUNT=$(gh issue list --label "$label" --json number --jq 'length' || echo 0)
+          TOTAL_COUNT=$(($TOTAL_COUNT + $COUNT))
+        done
         PLAYABLE_COUNT_one=$(gh issue list --label status-playable++ --json number --jq 'length' || echo 0)
         PLAYABLE_COUNT_two=$(gh issue list --label status-playable-- --json number --jq 'length' || echo 0)
         INGAME_COUNT_one=$(gh issue list --label status-ingame++ --json number --jq 'length' || echo 0)
