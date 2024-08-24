@@ -82,8 +82,8 @@ jobs:
         sed -i "s/Nothing-[0-9]*_(.*%25)/Nothing-${NOTHING_COUNT}_(${NOTHING_PERCENT}%25)/" README.md
         sed -i "s/Menus-[0-9]*_(.*%25)/Menus-${MENUS_COUNT}_(${MENUS_PERCENT}%25)/" README.md
 
-    - name: Check for changes
-      id: check_for_changes
+    - name: Check for new issues
+      id: check_for_new_issues
       run: |
         if git diff --exit-code > /dev/null; then
           echo "::set-output name=changed::false"
@@ -93,8 +93,8 @@ jobs:
           echo "New issues detected"
         fi
 
-    - name: Commit changes
-      if: steps.check_for_changes.outputs.changed == 'true'
+    - name: Commit status labels
+      if: steps.check_for_new_issues.outputs.changed == 'true'
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
