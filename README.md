@@ -1,8 +1,8 @@
 ### [Strato's](https://github.com/strato-emu/strato) Compatibility List
 
 ![Playable](https://img.shields.io/badge/Playable-1_(20%25)-brightgreen)
-![Ingame](https://img.shields.io/badge/Ingame-1_(20%25)-yellow)
-![Menus](https://img.shields.io/badge/Menus-0_(0%25)-orange)
+![Ingame](https://img.shields.io/badge/Ingame-0_(0%25)-yellow)
+![Menus](https://img.shields.io/badge/Menus-1_(20%25)-orange)
 ![Boots](https://img.shields.io/badge/Boots-1_(20%25)-red)
 ![Nothing](https://img.shields.io/badge/Nothing-2_(40%25)-blue)
 
