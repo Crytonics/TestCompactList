@@ -99,16 +99,11 @@ jobs:
            --arg nothing_percent "$NOTHING_PERCENT" \
            --arg menus_count "$MENUS_COUNT" \
            --arg menus_percent "$MENUS_PERCENT" \
-           '.["status-playable"].count = ($playable_count | tonumber) |
-            .["status-playable"].percentage = $playable_percent |
-            .["status-ingame"].count = ($ingame_count | tonumber) |
-            .["status-ingame"].percentage = $ingame_percent |
-            .["status-boots"].count = ($boots_count | tonumber) |
-            .["status-boots"].percentage = $boots_percent |
-            .["status-nothing"].count = ($nothing_count | tonumber) |
-            .["status-nothing"].percentage = $nothing_percent |
-            .["status-menus"].count = ($menus_count | tonumber) |
-            .["status-menus"].percentage = $menus_percent' \
+           '.["status-playable"] = {count: ($playable_count | tonumber), percentage: $playable_percent} |
+            .["status-ingame"] = {count: ($ingame_count | tonumber), percentage: $ingame_percent} |
+            .["status-boots"] = {count: ($boots_count | tonumber), percentage: $boots_percent} |
+            .["status-nothing"] = {count: ($nothing_count | tonumber), percentage: $nothing_percent} |
+            .["status-menus"] = {count: ($menus_count | tonumber), percentage: $menus_percent}' \
            compat-stats.json > compat-stats.json.tmp && mv compat-stats.json.tmp compat-stats.json
 
     - name: Check for new issues
