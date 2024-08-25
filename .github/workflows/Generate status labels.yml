@@ -89,7 +89,7 @@ jobs:
           echo '{}' > compat-stats.json
         fi
 
-        echo "PLAYABLE_COUNT: $PLAYABLE_COUNT"
+        echo "PLAYABLE_COUNT: ${{ steps.count_issues.outputs.playable_count }}
         echo "PLAYABLE_PERCENT: $PLAYABLE_PERCENT"
         echo "INGAME_COUNT: $INGAME_COUNT"
         echo "INGAME_PERCENT: $INGAME_PERCENT"
