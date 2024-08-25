@@ -89,17 +89,6 @@ jobs:
           echo '{}' > compat-stats.json
         fi
 
-        echo "PLAYABLE_COUNT: ${{ steps.count_issues.outputs.playable_count }}
-        echo "PLAYABLE_PERCENT: ${{ steps.count_issues.outputs.playable_percent }}
-        echo "INGAME_COUNT: ${{ steps.count_issues.outputs.ingame_count }}
-        echo "INGAME_PERCENT: ${{ steps.count_issues.outputs.ingame_percent }}
-        echo "BOOTS_COUNT: ${{ steps.count_issues.outputs.boots_count }}
-        echo "BOOTS_PERCENT: ${{ steps.count_issues.outputs.boots_percent }}
-        echo "NOTHING_COUNT: ${{ steps.count_issues.outputs.nothing_count }}
-        echo "NOTHING_PERCENT: ${{ steps.count_issues.outputs.nothing_percent }}
-        echo "MENUS_COUNT: ${{ steps.count_issues.outputs.menus_count }}
-        echo "MENUS_PERCENT: ${{ steps.count_issues.outputs.menus_percent }}
-
         jq --arg playable_count "${{ steps.count_issues.outputs.playable_count }}" \
            --arg playable_percent "${{ steps.count_issues.outputs.playable_percent }}" \
            --arg ingame_count "${{ steps.count_issues.outputs.ingame_count }}" \
@@ -133,7 +122,7 @@ jobs:
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add README.md
+        git add README.md compat-stats.json
         git commit -m "Generate status labels $(date +'%Y-%m-%d')"
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         
