@@ -1,7 +1,7 @@
 {
-  "status-boots": {"count": 110, "percentage": "20%"},
-  "status-ingame": {"count": 559, "percentage": "30%"},
-  "status-nothing": {"count": 57, "percentage": "40%"},
-  "status-menus": {"count": 49, "percentage": "50%"},
-  "status-playable": {"count": 3581, "percentage": "60%"}
+  "status-boots": {"count": 110, "percentage": "20"},
+  "status-ingame": {"count": 559, "percentage": "30"},
+  "status-nothing": {"count": 57, "percentage": "40"},
+  "status-menus": {"count": 49, "percentage": "50"},
+  "status-playable": {"count": 3581, "percentage": "60"}
 }
