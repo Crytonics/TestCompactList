@@ -82,6 +82,26 @@ jobs:
         sed -i "s/Nothing-[0-9]*_(.*%25)/Nothing-${NOTHING_COUNT}_(${NOTHING_PERCENT}%25)/" README.md
         sed -i "s/Menus-[0-9]*_(.*%25)/Menus-${MENUS_COUNT}_(${MENUS_PERCENT}%25)/" README.md
 
+    - name: Generate compat-stats.json
+      run: |
+        jq -n --arg playable_count "$PLAYABLE_COUNT" \
+              --arg playable_percent "$PLAYABLE_PERCENT" \
+              --arg ingame_count "$INGAME_COUNT" \
+              --arg ingame_percent "$INGAME_PERCENT" \
+              --arg boots_count "$BOOTS_COUNT" \
+              --arg boots_percent "$BOOTS_PERCENT" \
+              --arg nothing_count "$NOTHING_COUNT" \
+              --arg nothing_percent "$NOTHING_PERCENT" \
+              --arg menus_count "$MENUS_COUNT" \
+              --arg menus_percent "$MENUS_PERCENT" \
+              '{
+                "status-playable": {"count": $playable_count | tonumber, "percentage": $playable_percent},
+                "status-ingame": {"count": $ingame_count | tonumber, "percentage": $ingame_percent},
+                "status-boots": {"count": $boots_count | tonumber, "percentage": $boots_percent},
+                "status-nothing": {"count": $nothing_count | tonumber, "percentage": $nothing_percent},
+                "status-menus": {"count": $menus_count | tonumber, "percentage": $menus_percent}
+              }' > compat-stats.json
+
     - name: Check for new issues
       id: check_for_new_issues
       run: |
