@@ -90,26 +90,26 @@ jobs:
         fi
 
         echo "PLAYABLE_COUNT: ${{ steps.count_issues.outputs.playable_count }}
-        echo "PLAYABLE_PERCENT: $PLAYABLE_PERCENT"
-        echo "INGAME_COUNT: $INGAME_COUNT"
-        echo "INGAME_PERCENT: $INGAME_PERCENT"
-        echo "BOOTS_COUNT: $BOOTS_COUNT"
-        echo "BOOTS_PERCENT: $BOOTS_PERCENT"
-        echo "NOTHING_COUNT: $NOTHING_COUNT"
-        echo "NOTHING_PERCENT: $NOTHING_PERCENT"
-        echo "MENUS_COUNT: $MENUS_COUNT"
-        echo "MENUS_PERCENT: $MENUS_PERCENT"
+        echo "PLAYABLE_PERCENT: ${{ steps.count_issues.outputs.playable_percent }}
+        echo "INGAME_COUNT: ${{ steps.count_issues.outputs.ingame_count }}
+        echo "INGAME_PERCENT: ${{ steps.count_issues.outputs.ingame_percent }}
+        echo "BOOTS_COUNT: ${{ steps.count_issues.outputs.boots_count }}
+        echo "BOOTS_PERCENT: ${{ steps.count_issues.outputs.boots_percent }}
+        echo "NOTHING_COUNT: ${{ steps.count_issues.outputs.nothing_count }}
+        echo "NOTHING_PERCENT: ${{ steps.count_issues.outputs.nothing_percent }}
+        echo "MENUS_COUNT: ${{ steps.count_issues.outputs.menus_count }}
+        echo "MENUS_PERCENT: ${{ steps.count_issues.outputs.menus_percent }}
 
-        jq --arg playable_count "$PLAYABLE_COUNT" \
-           --arg playable_percent "$PLAYABLE_PERCENT" \
-           --arg ingame_count "$INGAME_COUNT" \
-           --arg ingame_percent "$INGAME_PERCENT" \
-           --arg boots_count "$BOOTS_COUNT" \
-           --arg boots_percent "$BOOTS_PERCENT" \
-           --arg nothing_count "$NOTHING_COUNT" \
-           --arg nothing_percent "$NOTHING_PERCENT" \
-           --arg menus_count "$MENUS_COUNT" \
-           --arg menus_percent "$MENUS_PERCENT" \
+        jq --arg playable_count "${{ steps.count_issues.outputs.playable_count }}" \
+           --arg playable_percent "${{ steps.count_issues.outputs.playable_percent }}" \
+           --arg ingame_count "${{ steps.count_issues.outputs.ingame_count }}" \
+           --arg ingame_percent "${{ steps.count_issues.outputs.ingame_percent }}" \
+           --arg boots_count "${{ steps.count_issues.outputs.boots_count }}" \
+           --arg boots_percent "${{ steps.count_issues.outputs.boots_percent }}" \
+           --arg nothing_count "${{ steps.count_issues.outputs.nothing_count }}" \
+           --arg nothing_percent "${{ steps.count_issues.outputs.nothing_percent }}" \
+           --arg menus_count "${{ steps.count_issues.outputs.menus_count }}" \
+           --arg menus_percent "${{ steps.count_issues.outputs.menus_percent }}" \
            '.["status-playable"] = {count: ($playable_count | tonumber), percentage: $playable_percent} |
             .["status-ingame"] = {count: ($ingame_count | tonumber), percentage: $ingame_percent} |
             .["status-boots"] = {count: ($boots_count | tonumber), percentage: $boots_percent} |
