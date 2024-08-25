@@ -84,23 +84,32 @@ jobs:
 
     - name: Generate compat-stats.json
       run: |
-        jq -n --arg playable_count "$PLAYABLE_COUNT" \
-              --arg playable_percent "$PLAYABLE_PERCENT" \
-              --arg ingame_count "$INGAME_COUNT" \
-              --arg ingame_percent "$INGAME_PERCENT" \
-              --arg boots_count "$BOOTS_COUNT" \
-              --arg boots_percent "$BOOTS_PERCENT" \
-              --arg nothing_count "$NOTHING_COUNT" \
-              --arg nothing_percent "$NOTHING_PERCENT" \
-              --arg menus_count "$MENUS_COUNT" \
-              --arg menus_percent "$MENUS_PERCENT" \
-              '{
-                "status-playable": {"count": $playable_count | tonumber, "percentage": $playable_percent},
-                "status-ingame": {"count": $ingame_count | tonumber, "percentage": $ingame_percent},
-                "status-boots": {"count": $boots_count | tonumber, "percentage": $boots_percent},
-                "status-nothing": {"count": $nothing_count | tonumber, "percentage": $nothing_percent},
-                "status-menus": {"count": $menus_count | tonumber, "percentage": $menus_percent}
-              }' > compat-stats.json
+        # Initialize compat-stats.json if it doesn't exist
+        if [ ! -f compat-stats.json ]; then
+          echo '{}' > compat-stats.json
+        fi
+
+        jq --arg playable_count "$PLAYABLE_COUNT" \
+           --arg playable_percent "$PLAYABLE_PERCENT" \
+           --arg ingame_count "$INGAME_COUNT" \
+           --arg ingame_percent "$INGAME_PERCENT" \
+           --arg boots_count "$BOOTS_COUNT" \
+           --arg boots_percent "$BOOTS_PERCENT" \
+           --arg nothing_count "$NOTHING_COUNT" \
+           --arg nothing_percent "$NOTHING_PERCENT" \
+           --arg menus_count "$MENUS_COUNT" \
+           --arg menus_percent "$MENUS_PERCENT" \
+           '.["status-playable"].count = ($playable_count | tonumber) |
+            .["status-playable"].percentage = $playable_percent |
+            .["status-ingame"].count = ($ingame_count | tonumber) |
+            .["status-ingame"].percentage = $ingame_percent |
+            .["status-boots"].count = ($boots_count | tonumber) |
+            .["status-boots"].percentage = $boots_percent |
+            .["status-nothing"].count = ($nothing_count | tonumber) |
+            .["status-nothing"].percentage = $nothing_percent |
+            .["status-menus"].count = ($menus_count | tonumber) |
+            .["status-menus"].percentage = $menus_percent' \
+           compat-stats.json > compat-stats.json.tmp && mv compat-stats.json.tmp compat-stats.json
 
     - name: Check for new issues
       id: check_for_new_issues
