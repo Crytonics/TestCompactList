@@ -89,15 +89,15 @@ jobs:
           echo '{}' > compat-stats.json
         fi
 
-        jq --arg playable_count "$PLAYABLE_COUNT" \
+        jq --argjson playable_count "$PLAYABLE_COUNT" \
            --arg playable_percent "$PLAYABLE_PERCENT" \
-           --arg ingame_count "$INGAME_COUNT" \
+           --argjson ingame_count "$INGAME_COUNT" \
            --arg ingame_percent "$INGAME_PERCENT" \
-           --arg boots_count "$BOOTS_COUNT" \
-           --arg boots_percent "$BOOTS_PERCENT" \
-           --arg nothing_count "$NOTHING_COUNT" \
+           --argjson boots_count "$BOOTS_COUNT" \
+           --argboots_percent "$BOOTS_PERCENT" \
+           --argjson nothing_count "$NOTHING_COUNT" \
            --arg nothing_percent "$NOTHING_PERCENT" \
-           --arg menus_count "$MENUS_COUNT" \
+           --argjson menus_count "$MENUS_COUNT" \
            --arg menus_percent "$MENUS_PERCENT" \
            '.["status-playable"] = {count: ($playable_count | tonumber), percentage: $playable_percent} |
             .["status-ingame"] = {count: ($ingame_count | tonumber), percentage: $ingame_percent} |
