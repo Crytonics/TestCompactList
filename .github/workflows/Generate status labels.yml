@@ -17,94 +17,60 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Count Issues
       id: count_issues
       run: |
-        TOTAL_COUNT=0
-        for label in "status-playable++" "status-playable--" "status-ingame++" "status-ingame--" "status-boots" "status-nothing" "status-menus"; do
-          COUNT=$(gh issue list --label "$label" --state open --json number --jq 'length' || echo 0)
-          TOTAL_COUNT=$(($TOTAL_COUNT + $COUNT))
+        declare -A label_counts
+        labels=("status-playable++" "status-playable--" "status-ingame++" "status-ingame--" "status-boots" "status-nothing" "status-menus")
+        
+        for label in "${labels[@]}"; do
+          label_counts[$label]=$(gh issue list --label "$label" --state open --json number --jq 'length' || echo 0)
         done
-
-        PLAYABLE_COUNT_one=$(gh issue list --label status-playable++ --state open --json number --jq 'length' || echo 0)
-        PLAYABLE_COUNT_two=$(gh issue list --label status-playable-- --state open --json number --jq 'length' || echo 0)
-        INGAME_COUNT_one=$(gh issue list --label status-ingame++ --state open --json number --jq 'length' || echo 0)
-        INGAME_COUNT_two=$(gh issue list --label status-ingame-- --state open --json number --jq 'length' || echo 0)
-        BOOTS_COUNT=$(gh issue list --label status-boots --state open --json number --jq 'length' || echo 0)
-        NOTHING_COUNT=$(gh issue list --label status-nothing --state open --json number --jq 'length' || echo 0)
-        MENUS_COUNT=$(gh issue list --label status-menus --state open --json number --jq 'length' || echo 0)
         
-        PLAYABLE_COUNT=$(($PLAYABLE_COUNT_one + $PLAYABLE_COUNT_two))
-        INGAME_COUNT=$(($INGAME_COUNT_one + $INGAME_COUNT_two))
-        PLAYABLE_PERCENT=$(($PLAYABLE_COUNT * 100 / $TOTAL_COUNT))
-        INGAME_PERCENT=$(($INGAME_COUNT * 100 / $TOTAL_COUNT))
-        BOOTS_PERCENT=$(($BOOTS_COUNT * 100 / $TOTAL_COUNT))
-        NOTHING_PERCENT=$(($NOTHING_COUNT * 100 / $TOTAL_COUNT))
-        MENUS_PERCENT=$(($MENUS_COUNT * 100 / $TOTAL_COUNT))
-
-        # Log the total number of issues
+        TOTAL_COUNT=$(IFS=+; echo "$((${label_counts[*]}))")
+        PLAYABLE_COUNT=$((${label_counts["status-playable++"]} + ${label_counts["status-playable--"]}))
+        INGAME_COUNT=$((${label_counts["status-ingame++"]} + ${label_counts["status-ingame--"]}))
+        
+        declare -A counts
+        counts[playable]=$PLAYABLE_COUNT
+        counts[ingame]=$INGAME_COUNT
+        counts[boots]=${label_counts["status-boots"]}
+        counts[nothing]=${label_counts["status-nothing"]}
+        counts[menus]=${label_counts["status-menus"]}
+        
+        for key in "${!counts[@]}"; do
+          echo "::set-output name=${key}_count::${counts[$key]}"
+          percent=$((${counts[$key]} * 100 / TOTAL_COUNT))
+          echo "::set-output name=${key}_percent::$percent"
+        done
+        
         echo "Total number of issues: $TOTAL_COUNT"
-        echo "Playable count: $PLAYABLE_COUNT"
-        echo "Ingame count: $INGAME_COUNT"
-        echo "Menus count: $MENUS_COUNT"
-        echo "Boots count: $BOOTS_COUNT"
-        echo "Nothing count: $NOTHING_COUNT"
-        
-        echo "::set-output name=playable_count::$PLAYABLE_COUNT"
-        echo "::set-output name=ingame_count::$INGAME_COUNT"
-        echo "::set-output name=boots_count::$BOOTS_COUNT"
-        echo "::set-output name=nothing_count::$NOTHING_COUNT"
-        echo "::set-output name=menus_count::$MENUS_COUNT"
-        echo "::set-output name=playable_percent::$PLAYABLE_PERCENT"
-        echo "::set-output name=ingame_percent::$INGAME_PERCENT"
-        echo "::set-output name=boots_percent::$BOOTS_PERCENT"
-        echo "::set-output name=nothing_percent::$NOTHING_PERCENT"
-        echo "::set-output name=menus_percent::$MENUS_PERCENT"
+        for key in "${!counts[@]}"; do
+          echo "${key^} count: ${counts[$key]}"
+        done
 
     - name: Update README.md
       run: |
-        PLAYABLE_COUNT=${{ steps.count_issues.outputs.playable_count }}
-        INGAME_COUNT=${{ steps.count_issues.outputs.ingame_count }}
-        BOOTS_COUNT=${{ steps.count_issues.outputs.boots_count }}
-        NOTHING_COUNT=${{ steps.count_issues.outputs.nothing_count }}
-        MENUS_COUNT=${{ steps.count_issues.outputs.menus_count }}
-        PLAYABLE_PERCENT=${{ steps.count_issues.outputs.playable_percent }}
-        INGAME_PERCENT=${{ steps.count_issues.outputs.ingame_percent }}
-        BOOTS_PERCENT=${{ steps.count_issues.outputs.boots_percent }}
-        NOTHING_PERCENT=${{ steps.count_issues.outputs.nothing_percent }}
-        MENUS_PERCENT=${{ steps.count_issues.outputs.menus_percent }}
-        
-        sed -i "s/Playable-[0-9]*_(.*%25)/Playable-${PLAYABLE_COUNT}_(${PLAYABLE_PERCENT}%25)/" README.md
-        sed -i "s/Ingame-[0-9]*_(.*%25)/Ingame-${INGAME_COUNT}_(${INGAME_PERCENT}%25)/" README.md
-        sed -i "s/Boots-[0-9]*_(.*%25)/Boots-${BOOTS_COUNT}_(${BOOTS_PERCENT}%25)/" README.md
-        sed -i "s/Nothing-[0-9]*_(.*%25)/Nothing-${NOTHING_COUNT}_(${NOTHING_PERCENT}%25)/" README.md
-        sed -i "s/Menus-[0-9]*_(.*%25)/Menus-${MENUS_COUNT}_(${MENUS_PERCENT}%25)/" README.md
+        for status in playable ingame boots nothing menus; do
+          count="${{ steps.count_issues.outputs.${status}_count }}"
+          percent="${{ steps.count_issues.outputs.${status}_percent }}"
+          sed -i "s/${status^}-[0-9]*_(.*%25)/${status^}-${count}_(${percent}%25)/" README.md
+        done
 
     - name: Generate compat-stats.json
       run: |
-        # Initialize compat-stats.json if it doesn't exist or is empty
-        if [ ! -s compat-stats.json ]; then
-          echo '{}' > compat-stats.json
-        fi
-
-        jq --arg playable_count "${{ steps.count_issues.outputs.playable_count }}" \
-           --arg playable_percent "${{ steps.count_issues.outputs.playable_percent }}" \
-           --arg ingame_count "${{ steps.count_issues.outputs.ingame_count }}" \
-           --arg ingame_percent "${{ steps.count_issues.outputs.ingame_percent }}" \
-           --arg boots_count "${{ steps.count_issues.outputs.boots_count }}" \
-           --arg boots_percent "${{ steps.count_issues.outputs.boots_percent }}" \
-           --arg nothing_count "${{ steps.count_issues.outputs.nothing_count }}" \
-           --arg nothing_percent "${{ steps.count_issues.outputs.nothing_percent }}" \
-           --arg menus_count "${{ steps.count_issues.outputs.menus_count }}" \
-           --arg menus_percent "${{ steps.count_issues.outputs.menus_percent }}" \
-           '.["status-playable"] = {count: ($playable_count | tonumber), percentage: $playable_percent} |
-            .["status-ingame"] = {count: ($ingame_count | tonumber), percentage: $ingame_percent} |
-            .["status-boots"] = {count: ($boots_count | tonumber), percentage: $boots_percent} |
-            .["status-nothing"] = {count: ($nothing_count | tonumber), percentage: $nothing_percent} |
-            .["status-menus"] = {count: ($menus_count | tonumber), percentage: $menus_percent}' \
-           compat-stats.json > compat-stats.json.tmp && mv compat-stats.json.tmp compat-stats.json
+        echo '{}' > compat-stats.json
+        for status in playable ingame boots nothing menus; do
+          count="${{ steps.count_issues.outputs.${status}_count }}"
+          percent="${{ steps.count_issues.outputs.${status}_percent }}"
+          jq --arg status "status-$status" \
+             --arg count "$count" \
+             --arg percent "$percent" \
+             '.[$status] = {count: ($count | tonumber), percentage: $percent}' \
+             compat-stats.json > temp.json && mv temp.json compat-stats.json
+        done
 
     - name: Check for new issues
       id: check_for_new_issues
@@ -124,5 +90,4 @@ jobs:
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add README.md compat-stats.json
         git commit -m "Generate status labels $(date +'%Y-%m-%d')"
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-        
+        git push
