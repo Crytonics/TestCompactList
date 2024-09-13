@@ -8,15 +8,15 @@
     "percentage": "0"
   },
   "status-nothing": {
-    "count": 1,
-    "percentage": "20"
+    "count": 2,
+    "percentage": "40"
   },
   "status-menus": {
     "count": 1,
     "percentage": "20"
   },
   "status-playable": {
-    "count": 2,
-    "percentage": "40"
+    "count": 1,
+    "percentage": "20"
   }
 }
