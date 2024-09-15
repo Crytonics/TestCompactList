@@ -22,16 +22,13 @@ jobs:
     - name: Count Issues
       id: count_issues
       run: |
-        # Change 1: Use an associative array to store label counts
         declare -A label_counts
         labels=("status-playable++" "status-playable--" "status-ingame++" "status-ingame--" "status-boots" "status-nothing" "status-menus")
         
-        # Change 2: Simplify the counting process using a loop
         for label in "${labels[@]}"; do
           label_counts[$label]=$(gh issue list --label "$label" --state open --json number --jq 'length' || echo 0)
         done
         
-        # Change 3: Calculate totals using arithmetic expansion
         TOTAL_COUNT=$(IFS=+; echo "$((${label_counts[*]}))")
         PLAYABLE_COUNT=$((${label_counts["status-playable++"]} + ${label_counts["status-playable--"]}))
         INGAME_COUNT=$((${label_counts["status-ingame++"]} + ${label_counts["status-ingame--"]}))
@@ -39,7 +36,6 @@ jobs:
         NOTHING_COUNT=${label_counts["status-nothing"]}
         MENUS_COUNT=${label_counts["status-menus"]}
         
-        # Change 4: Create a function to calculate percentages
         calculate_percent() {
           echo $(( $1 * 100 / $TOTAL_COUNT ))
         }
@@ -57,7 +53,6 @@ jobs:
         echo "Boots count: $BOOTS_COUNT"
         echo "Nothing count: $NOTHING_COUNT"
         
-        # Change 5: Use a heredoc to output multiple lines to GITHUB_OUTPUT
         {
           echo "playable_count=$PLAYABLE_COUNT"
           echo "ingame_count=$INGAME_COUNT"
@@ -73,7 +68,6 @@ jobs:
 
     - name: Update README.md
       run: |
-        # Change 6: Create a function to update README.md
         update_readme() {
           local status=$1
           local count=$2
@@ -81,7 +75,6 @@ jobs:
           sed -i "s/${status}-[0-9]*_(.*%25)/${status}-${count}_(${percent}%25)/" README.md
         }
         
-        # Change 7: Use the function to update README.md
         update_readme "Playable" "${{ steps.count_issues.outputs.playable_count }}" "${{ steps.count_issues.outputs.playable_percent }}"
         update_readme "Ingame" "${{ steps.count_issues.outputs.ingame_count }}" "${{ steps.count_issues.outputs.ingame_percent }}"
         update_readme "Boots" "${{ steps.count_issues.outputs.boots_count }}" "${{ steps.count_issues.outputs.boots_percent }}"
@@ -94,7 +87,6 @@ jobs:
           echo '{}' > compat-stats.json
         fi
         
-        # Change 8: Separate jq filter into a variable for better readability
         jq_filter='.["status-playable"] = {count: ($playable_count | tonumber), percentage: $playable_percent} |
                    .["status-ingame"] = {count: ($ingame_count | tonumber), percentage: $ingame_percent} |
                    .["status-boots"] = {count: ($boots_count | tonumber), percentage: $boots_percent} |
