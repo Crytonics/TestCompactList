@@ -22,29 +22,34 @@ jobs:
     - name: Count Issues
       id: count_issues
       run: |
-        TOTAL_COUNT=0
-        for label in "status-playable++" "status-playable--" "status-ingame++" "status-ingame--" "status-boots" "status-nothing" "status-menus"; do
-          COUNT=$(gh issue list --label "$label" --state open --json number --jq 'length' || echo 0)
-          TOTAL_COUNT=$(($TOTAL_COUNT + $COUNT))
-        done
-
-        PLAYABLE_COUNT_one=$(gh issue list --label status-playable++ --state open --json number --jq 'length' || echo 0)
-        PLAYABLE_COUNT_two=$(gh issue list --label status-playable-- --state open --json number --jq 'length' || echo 0)
-        INGAME_COUNT_one=$(gh issue list --label status-ingame++ --state open --json number --jq 'length' || echo 0)
-        INGAME_COUNT_two=$(gh issue list --label status-ingame-- --state open --json number --jq 'length' || echo 0)
-        BOOTS_COUNT=$(gh issue list --label status-boots --state open --json number --jq 'length' || echo 0)
-        NOTHING_COUNT=$(gh issue list --label status-nothing --state open --json number --jq 'length' || echo 0)
-        MENUS_COUNT=$(gh issue list --label status-menus --state open --json number --jq 'length' || echo 0)
+        # Change 1: Use an associative array to store label counts
+        declare -A label_counts
+        labels=("status-playable++" "status-playable--" "status-ingame++" "status-ingame--" "status-boots" "status-nothing" "status-menus")
         
-        PLAYABLE_COUNT=$(($PLAYABLE_COUNT_one + $PLAYABLE_COUNT_two))
-        INGAME_COUNT=$(($INGAME_COUNT_one + $INGAME_COUNT_two))
-        PLAYABLE_PERCENT=$(($PLAYABLE_COUNT * 100 / $TOTAL_COUNT))
-        INGAME_PERCENT=$(($INGAME_COUNT * 100 / $TOTAL_COUNT))
-        BOOTS_PERCENT=$(($BOOTS_COUNT * 100 / $TOTAL_COUNT))
-        NOTHING_PERCENT=$(($NOTHING_COUNT * 100 / $TOTAL_COUNT))
-        MENUS_PERCENT=$(($MENUS_COUNT * 100 / $TOTAL_COUNT))
-
-        # Log the total number of issues
+        # Change 2: Simplify the counting process using a loop
+        for label in "${labels[@]}"; do
+          label_counts[$label]=$(gh issue list --label "$label" --state open --json number --jq 'length' || echo 0)
+        done
+        
+        # Change 3: Calculate totals using arithmetic expansion
+        TOTAL_COUNT=$(IFS=+; echo "$((${label_counts[*]}))")
+        PLAYABLE_COUNT=$((${label_counts["status-playable++"]} + ${label_counts["status-playable--"]}))
+        INGAME_COUNT=$((${label_counts["status-ingame++"]} + ${label_counts["status-ingame--"]}))
+        BOOTS_COUNT=${label_counts["status-boots"]}
+        NOTHING_COUNT=${label_counts["status-nothing"]}
+        MENUS_COUNT=${label_counts["status-menus"]}
+        
+        # Change 4: Create a function to calculate percentages
+        calculate_percent() {
+          echo $(( $1 * 100 / $TOTAL_COUNT ))
+        }
+        
+        PLAYABLE_PERCENT=$(calculate_percent $PLAYABLE_COUNT)
+        INGAME_PERCENT=$(calculate_percent $INGAME_COUNT)
+        BOOTS_PERCENT=$(calculate_percent $BOOTS_COUNT)
+        NOTHING_PERCENT=$(calculate_percent $NOTHING_COUNT)
+        MENUS_PERCENT=$(calculate_percent $MENUS_COUNT)
+        
         echo "Total number of issues: $TOTAL_COUNT"
         echo "Playable count: $PLAYABLE_COUNT"
         echo "Ingame count: $INGAME_COUNT"
@@ -52,43 +57,50 @@ jobs:
         echo "Boots count: $BOOTS_COUNT"
         echo "Nothing count: $NOTHING_COUNT"
         
-        echo "playable_count=$PLAYABLE_COUNT" >> $GITHUB_OUTPUT
-        echo "ingame_count=$INGAME_COUNT" >> $GITHUB_OUTPUT
-        echo "boots_count=$BOOTS_COUNT" >> $GITHUB_OUTPUT
-        echo "nothing_count=$NOTHING_COUNT" >> $GITHUB_OUTPUT
-        echo "menus_count=$MENUS_COUNT" >> $GITHUB_OUTPUT
-        echo "playable_percent=$PLAYABLE_PERCENT" >> $GITHUB_OUTPUT
-        echo "ingame_percent=$INGAME_PERCENT" >> $GITHUB_OUTPUT
-        echo "boots_percent=$BOOTS_PERCENT" >> $GITHUB_OUTPUT
-        echo "nothing_percent=$NOTHING_PERCENT" >> $GITHUB_OUTPUT
-        echo "menus_percent=$MENUS_PERCENT" >> $GITHUB_OUTPUT
+        # Change 5: Use a heredoc to output multiple lines to GITHUB_OUTPUT
+        {
+          echo "playable_count=$PLAYABLE_COUNT"
+          echo "ingame_count=$INGAME_COUNT"
+          echo "boots_count=$BOOTS_COUNT"
+          echo "nothing_count=$NOTHING_COUNT"
+          echo "menus_count=$MENUS_COUNT"
+          echo "playable_percent=$PLAYABLE_PERCENT"
+          echo "ingame_percent=$INGAME_PERCENT"
+          echo "boots_percent=$BOOTS_PERCENT"
+          echo "nothing_percent=$NOTHING_PERCENT"
+          echo "menus_percent=$MENUS_PERCENT"
+        } >> $GITHUB_OUTPUT
 
     - name: Update README.md
       run: |
-        PLAYABLE_COUNT=${{ steps.count_issues.outputs.playable_count }}
-        INGAME_COUNT=${{ steps.count_issues.outputs.ingame_count }}
-        BOOTS_COUNT=${{ steps.count_issues.outputs.boots_count }}
-        NOTHING_COUNT=${{ steps.count_issues.outputs.nothing_count }}
-        MENUS_COUNT=${{ steps.count_issues.outputs.menus_count }}
-        PLAYABLE_PERCENT=${{ steps.count_issues.outputs.playable_percent }}
-        INGAME_PERCENT=${{ steps.count_issues.outputs.ingame_percent }}
-        BOOTS_PERCENT=${{ steps.count_issues.outputs.boots_percent }}
-        NOTHING_PERCENT=${{ steps.count_issues.outputs.nothing_percent }}
-        MENUS_PERCENT=${{ steps.count_issues.outputs.menus_percent }}
+        # Change 6: Create a function to update README.md
+        update_readme() {
+          local status=$1
+          local count=$2
+          local percent=$3
+          sed -i "s/${status}-[0-9]*_(.*%25)/${status}-${count}_(${percent}%25)/" README.md
+        }
         
-        sed -i "s/Playable-[0-9]*_(.*%25)/Playable-${PLAYABLE_COUNT}_(${PLAYABLE_PERCENT}%25)/" README.md
-        sed -i "s/Ingame-[0-9]*_(.*%25)/Ingame-${INGAME_COUNT}_(${INGAME_PERCENT}%25)/" README.md
-        sed -i "s/Boots-[0-9]*_(.*%25)/Boots-${BOOTS_COUNT}_(${BOOTS_PERCENT}%25)/" README.md
-        sed -i "s/Nothing-[0-9]*_(.*%25)/Nothing-${NOTHING_COUNT}_(${NOTHING_PERCENT}%25)/" README.md
-        sed -i "s/Menus-[0-9]*_(.*%25)/Menus-${MENUS_COUNT}_(${MENUS_PERCENT}%25)/" README.md
+        # Change 7: Use the function to update README.md
+        update_readme "Playable" "${{ steps.count_issues.outputs.playable_count }}" "${{ steps.count_issues.outputs.playable_percent }}"
+        update_readme "Ingame" "${{ steps.count_issues.outputs.ingame_count }}" "${{ steps.count_issues.outputs.ingame_percent }}"
+        update_readme "Boots" "${{ steps.count_issues.outputs.boots_count }}" "${{ steps.count_issues.outputs.boots_percent }}"
+        update_readme "Nothing" "${{ steps.count_issues.outputs.nothing_count }}" "${{ steps.count_issues.outputs.nothing_percent }}"
+        update_readme "Menus" "${{ steps.count_issues.outputs.menus_count }}" "${{ steps.count_issues.outputs.menus_percent }}"
 
     - name: Generate compat-stats.json
       run: |
-        # Initialize compat-stats.json if it doesn't exist or is empty
         if [ ! -s compat-stats.json ]; then
           echo '{}' > compat-stats.json
         fi
-
+        
+        # Change 8: Separate jq filter into a variable for better readability
+        jq_filter='.["status-playable"] = {count: ($playable_count | tonumber), percentage: $playable_percent} |
+                   .["status-ingame"] = {count: ($ingame_count | tonumber), percentage: $ingame_percent} |
+                   .["status-boots"] = {count: ($boots_count | tonumber), percentage: $boots_percent} |
+                   .["status-nothing"] = {count: ($nothing_count | tonumber), percentage: $nothing_percent} |
+                   .["status-menus"] = {count: ($menus_count | tonumber), percentage: $menus_percent}'
+        
         jq --arg playable_count "${{ steps.count_issues.outputs.playable_count }}" \
            --arg playable_percent "${{ steps.count_issues.outputs.playable_percent }}" \
            --arg ingame_count "${{ steps.count_issues.outputs.ingame_count }}" \
@@ -99,12 +111,7 @@ jobs:
            --arg nothing_percent "${{ steps.count_issues.outputs.nothing_percent }}" \
            --arg menus_count "${{ steps.count_issues.outputs.menus_count }}" \
            --arg menus_percent "${{ steps.count_issues.outputs.menus_percent }}" \
-           '.["status-playable"] = {count: ($playable_count | tonumber), percentage: $playable_percent} |
-            .["status-ingame"] = {count: ($ingame_count | tonumber), percentage: $ingame_percent} |
-            .["status-boots"] = {count: ($boots_count | tonumber), percentage: $boots_percent} |
-            .["status-nothing"] = {count: ($nothing_count | tonumber), percentage: $nothing_percent} |
-            .["status-menus"] = {count: ($menus_count | tonumber), percentage: $menus_percent}' \
-           compat-stats.json > compat-stats.json.tmp && mv compat-stats.json.tmp compat-stats.json
+           "$jq_filter" compat-stats.json > compat-stats.json.tmp && mv compat-stats.json.tmp compat-stats.json
 
     - name: Check for new issues
       id: check_for_new_issues
